@@ -1,3 +1,114 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-color: #F7F4ED;
+    --card-bg: #FFFFFF;
+    --primary-gold: #B8860B;
+    --secondary-brown: #7A4E1D;
+    --text-dark: #1A1A1A;
+  }
+
+  .dark {
+    --bg-color: #0A0A09;
+    --card-bg: #141311;
+    --text-dark: #F7F4ED;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    font-family: 'Inter', 'Poppins', 'Manrope', sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Global Dark Mode Overrides for Royal Black & Gold */
+html.dark body,
+.dark body {
+  background-color: #0A0A09 !important;
+  color: #F7F4ED !important;
+}
+
+html.dark .bg-white,
+.dark .bg-white,
+html.dark .bg-white\/80,
+.dark .bg-white\/80 {
+  background-color: #141311 !important;
+  color: #F7F4ED !important;
+}
+
+html.dark .bg-\[\#F7F4ED\],
+.dark .bg-\[\#F7F4ED\] {
+  background-color: #0A0A09 !important;
+}
+
+html.dark .text-slate-900,
+.dark .text-slate-900,
+html.dark .text-slate-800,
+.dark .text-slate-800,
+html.dark .text-slate-700,
+.dark .text-slate-700,
+html.dark .text-slate-600,
+.dark .text-slate-600 {
+  color: #F7F4ED !important;
+}
+
+html.dark .text-slate-500,
+.dark .text-slate-500,
+html.dark .text-slate-400,
+.dark .text-slate-400 {
+  color: #C5BAA8 !important;
+}
+
+html.dark .border-slate-200,
+.dark .border-slate-200,
+html.dark .border-slate-100,
+.dark .border-slate-100 {
+  border-color: rgba(184, 134, 11, 0.2) !important;
+}
+
+html.dark input,
+.dark input,
+html.dark textarea,
+.dark textarea,
+html.dark select,
+.dark select {
+  background-color: #1A1916 !important;
+  color: #F7F4ED !important;
+  border-color: rgba(184, 134, 11, 0.3) !important;
+}
+
+/* Custom Premium Glass & Gold Utilities */
+.luxury-card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(184, 134, 11, 0.15);
+  box-shadow: 0 10px 30px -15px rgba(122, 78, 29, 0.08);
+}
+
+.luxury-button {
+  background-color: #B8860B;
+  color: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px -3px rgba(184, 134, 11, 0.4);
+  transition: all 0.2s ease-in-out;
+}
+
+.luxury-button:hover {
+  background-color: #7A4E1D;
+  box-shadow: 0 6px 20px -3px rgba(184, 134, 11, 0.5);
+}
+
+.text-gold {
+  color: #B8860B;
+}
+
+.bg-gold-light {
+  background-color: rgba(184, 134, 11, 0.08);
+}
+
+.border-gold-light {
+  border-color: rgba(184, 134, 11, 0.2);
+}
