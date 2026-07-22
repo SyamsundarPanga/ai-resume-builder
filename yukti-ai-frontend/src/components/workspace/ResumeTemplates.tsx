@@ -2,6 +2,7 @@ import React from 'react';
 import { useWorkspace } from '@contexts/WorkspaceContext';
 import Card from '@components/common/Card';
 import { FiLayout } from 'react-icons/fi';
+import API from '@utils/api';
 
 export const ResumeTemplates: React.FC = () => {
   const { templateName, setTemplateName } = useWorkspace();
@@ -9,11 +10,10 @@ export const ResumeTemplates: React.FC = () => {
   const [dbTemplates, setDbTemplates] = React.useState<any[]>([]);
 
   React.useEffect(() => {
-    fetch('http://localhost:8080/api/resume/templates')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setDbTemplates(data);
+    API.get('/api/resume/templates')
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setDbTemplates(res.data);
         }
       })
       .catch((err) => console.error(err));

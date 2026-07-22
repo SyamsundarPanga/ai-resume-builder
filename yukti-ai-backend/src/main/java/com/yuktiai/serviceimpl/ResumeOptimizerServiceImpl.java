@@ -26,7 +26,7 @@ public class ResumeOptimizerServiceImpl implements ResumeOptimizerService {
 
     @Override
     public String getOptimizedResumeJson(Resume resume, JobDescription jobDescription, List<String> confirmedSkills, Map<String, String> additionalExperiences) {
-        log.info("Optimizing Resume ID: {} with Job Description ID: {} using Gemini (with confirmed skills)", resume.getId(), jobDescription.getId());
+        log.info("Optimizing Resume ID: {} with Job Description ID: {} using strict editor sequence", resume.getId(), jobDescription.getId());
 
         String parsedResumeJson = resume.getParsedResume() != null ? resume.getParsedResume().getParsedJson() : "{}";
         String parsedJdJson = jobDescription.getParsedJson() != null ? jobDescription.getParsedJson() : "{}";
@@ -42,57 +42,62 @@ public class ResumeOptimizerServiceImpl implements ResumeOptimizerService {
                 }
                 confirmationRules.append("\n");
             }
-            confirmationRules.append("You are allowed and encouraged to integrate these specific confirmed skills and details into the optimized resume where relevant.\n");
         }
 
         String promptText = """
-                You are a Professional Resume Optimizer and ATS Expert.
-                Your task is to optimize the candidate's parsed resume JSON to match the job description.
+                You are a Professional Resume Editor and ATS Alignment Expert.
+                Your task is to refine and optimize the candidate's resume JSON to match the job description.
                 
-                CRITICAL INSTRUCTIONS:
-                - Do NOT create any fake experience.
-                - Do NOT create any fake skills.
-                - Do NOT create any fake companies or employment history.
-                - Do NOT create any fake certifications or degrees.
-                - ONLY improve the wording, phrasing, layout, and presentation of the user's actual experience and skills.
-                - Emphasize and prioritize matching keywords, methodologies, and technologies that the candidate already has but might have written poorly or formatted weakly.
-                - Rewrite professional summaries, experience descriptions, and project details to demonstrate high impact, action verbs, and clear relevance to the job requirements.
+                You must follow the strict REWRITE STRATEGY sequence:
+                1. Optimization Plan: Review candidate sections, draft wording adjustments, specify project technologies to highlight.
+                2. Rewrite: Rewrite the user's experience professionally while strictly preserving original meaning. Do not copy sentences directly from the Job Description.
+                3. Validation: Verify that zero fabricated claims (no fake skills, companies, achievements, or certs) are present.
+                
+                CRITICAL CONSTRAINTS & FORMATTING:
+                - Summary: Professional, highly tailored summary. Maximum 4 lines.
+                - Experience: Keep work history as bullet points. Maximum 6 bullets per job. Each bullet must be precisely 18-25 words long. Every bullet must start with a strong, active verb.
+                - Projects: Every project must include Name, Tech Stack, 3-5 bullets, GitHub link, and Live Link.
+                - Skills Grouping: Group all skills into: Programming Languages, Backend, Frontend, Databases, Cloud, DevOps, Tools.
+                
+                Strictly do NOT invent new skills, companies, projects, or achievements. Only edit and polish existing experiences and technologies.
                 
                 %s
                 
-                The output MUST be a valid JSON object matching the input structure exactly:
+                The output MUST be a valid JSON object matching this structure:
                 {
                   "name": "...",
                   "email": "...",
                   "phone": "...",
-                  "skills": ["Skill 1", "Skill 2"],
+                  "skills": ["Programming Languages: Java, Python", "Backend: Spring Boot, Microservices", "Databases: PostgreSQL"],
                   "projects": [
                      {
                        "title": "Project Title",
-                       "description": "Optimized description reflecting impact and tools",
-                       "technologies": ["techs"]
+                       "description": "bullet 1\\nbullet 2\\nbullet 3",
+                       "technologies": ["techs"],
+                       "github": "http://...",
+                       "liveLink": "http://..."
                      }
                   ],
                   "experience": [
                      {
-                       "company": "Company Name",
-                       "role": "Job Role",
-                       "startDate": "Start date",
-                       "endDate": "End date",
-                       "description": "Optimized bullet points using active keywords and metrics if possible"
+                       "company": "...",
+                       "role": "...",
+                       "startDate": "...",
+                       "endDate": "...",
+                       "description": "bullet 1\\nbullet 2"
                      }
                   ],
                   "education": [
                      {
-                       "institution": "School Name",
-                       "degree": "Degree",
-                       "fieldOfStudy": "Field",
-                       "startDate": "Start Date",
-                       "endDate": "End Date",
-                       "grade": "Grade"
+                       "institution": "...",
+                       "degree": "...",
+                       "fieldOfStudy": "...",
+                       "startDate": "...",
+                       "endDate": "...",
+                       "grade": "..."
                      }
                   ],
-                  "summary": "Optimized professional summary mapping the candidate's profile to the target job description details",
+                  "summary": "Tailored concise professional summary (max 4 lines)",
                   "achievements": [],
                   "certifications": [],
                   "languages": [],

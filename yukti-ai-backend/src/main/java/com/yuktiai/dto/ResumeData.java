@@ -16,6 +16,7 @@ public class ResumeData {
     private String name;
     private String email;
     private String phone;
+    private String location;
     @Builder.Default
     private List<String> skills = new ArrayList<>();
     @Builder.Default
@@ -41,6 +42,8 @@ public class ResumeData {
     public static class ProjectDto {
         private String title;
         private String description;
+        private String github;
+        private String liveLink;
         @Builder.Default
         private List<String> technologies = new ArrayList<>();
     }

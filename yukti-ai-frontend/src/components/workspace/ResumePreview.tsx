@@ -37,7 +37,7 @@ export const ResumePreview: React.FC = () => {
     );
   }
 
-  const p = resumeData.personalInfo || {};
+  const p = resumeData.personalInfo || resumeData || {};
 
   return (
     <Card className="text-left space-y-6 bg-white dark:bg-[#141311] border border-[#B8860B]/20 rounded-3xl p-8 max-w-4xl mx-auto shadow-lg relative">
