@@ -36,6 +36,7 @@ public class ResumeParserServiceImpl implements ResumeParserService {
                   "name": "Candidate Name (or empty string)",
                   "email": "Candidate Email (or empty string)",
                   "phone": "Candidate Phone (or empty string)",
+                  "location": "Candidate City/State/Country (or empty string)",
                   "skills": ["Skill 1", "Skill 2"],
                   "projects": [
                      {

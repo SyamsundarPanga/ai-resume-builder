@@ -17,11 +17,33 @@ import java.util.stream.Collectors;
 public class KeywordMatcher {
 
     private final ObjectMapper objectMapper;
+    private final SkillNormalizer skillNormalizer;
+    private final SkillOntology skillOntology;
+    private final LocationMatcher locationMatcher;
+    private final EntityClassifier entityClassifier;
 
     @lombok.Data
     public static class KeywordMatchResult {
         private List<String> matchedKeywords = new ArrayList<>();
         private List<String> missingKeywords = new ArrayList<>();
+        
+        // Detailed classification maps
+        private List<String> matchedSkills = new ArrayList<>();
+        private List<String> missingSkills = new ArrayList<>();
+        private List<String> matchedTechnologies = new ArrayList<>();
+        private List<String> matchedDatabases = new ArrayList<>();
+        private List<String> matchedCloudTechnologies = new ArrayList<>();
+        
+        // Partial semantic equivalence matches (confidence score details)
+        private List<String> partialMatches = new ArrayList<>();
+        
+        // Responsibilities Match
+        private List<String> matchedResponsibilities = new ArrayList<>();
+        private List<String> missingResponsibilities = new ArrayList<>();
+        
+        // Location logs
+        private List<String> matchedLocations = new ArrayList<>();
+        private List<String> missingLocations = new ArrayList<>();
     }
 
     public KeywordMatchResult matchKeywords(String resumeJson, String jdJson) {
@@ -58,6 +80,8 @@ public class KeywordMatcher {
             List<String> jdKeywords = new ArrayList<>();
             if (jd.getRequiredSkills() != null) jdKeywords.addAll(jd.getRequiredSkills());
             if (jd.getPreferredSkills() != null) jdKeywords.addAll(jd.getPreferredSkills());
+            if (jd.getTechnologies() != null) jdKeywords.addAll(jd.getTechnologies());
+            if (jd.getSoftSkills() != null) jdKeywords.addAll(jd.getSoftSkills());
             if (jd.getKeywords() != null) jdKeywords.addAll(jd.getKeywords());
 
             Set<String> uniqueJdKeywords = jdKeywords.stream()
@@ -66,13 +90,63 @@ public class KeywordMatcher {
                     .collect(Collectors.toSet());
 
             for (String keyword : uniqueJdKeywords) {
-                // Word boundary check or simple containment
-                if (resumeText.contains(keyword.toLowerCase())) {
+                String cleanKeyword = keyword.toLowerCase().trim();
+                
+                // 1. Never treat work modes as skills
+                if (cleanKeyword.equals("remote") || cleanKeyword.equals("hybrid") || cleanKeyword.equals("onsite")) {
+                    continue;
+                }
+
+                // 2. Perform Normalized check
+                if (resumeText.contains(cleanKeyword)) {
                     result.getMatchedKeywords().add(keyword);
+                    classifyMatchedItem(keyword, result);
                 } else {
-                    result.getMissingKeywords().add(keyword);
+                    // Try ontology normalization mapping match
+                    String normKeyword = skillOntology.normalize(cleanKeyword);
+                    boolean normalizedMatchFound = false;
+
+                    // Check if any of the candidate's parsed skills normalized matches the keyword normalized value
+                    if (resume.getSkills() != null) {
+                        for (String rSkill : resume.getSkills()) {
+                            if (skillOntology.areEquivalent(rSkill, keyword)) {
+                                result.getMatchedKeywords().add(keyword);
+                                result.getPartialMatches().add(keyword + " <-> " + rSkill + " (100% confidence via Ontology synonym)");
+                                classifyMatchedItem(keyword, result);
+                                normalizedMatchFound = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!normalizedMatchFound) {
+                        result.getMissingKeywords().add(keyword);
+                        result.getMissingSkills().add(keyword);
+                    }
                 }
             }
+
+            // 3. Match Responsibilities
+            if (jd.getResponsibilities() != null) {
+                for (String resp : jd.getResponsibilities()) {
+                    if (resumeText.contains(resp.toLowerCase().trim())) {
+                        result.getMatchedResponsibilities().add(resp);
+                    } else {
+                        result.getMissingResponsibilities().add(resp);
+                    }
+                }
+            }
+
+            // 4. Match locations using LocationMatcher
+            String resLocation = resume.getLocation() != null ? resume.getLocation() : "";
+            List<String> jdLocs = new ArrayList<>();
+            // Extract from raw JD or look up
+            if (resumeText.contains("hyderabad")) jdLocs.add("Hyderabad");
+            if (resumeText.contains("bangalore")) jdLocs.add("Bangalore");
+            
+            LocationMatcher.LocationMatchResult locResult = locationMatcher.matchLocation(resLocation, jdLocs, "Hybrid", "Hybrid");
+            result.setMatchedLocations(locResult.getMatchedLocations());
+            result.setMissingLocations(locResult.getMissingLocations());
 
         } catch (Exception e) {
             log.error("Failed to parse JSON for keyword matching", e);
@@ -80,12 +154,27 @@ public class KeywordMatcher {
         return result;
     }
 
+    private void classifyMatchedItem(String item, KeywordMatchResult result) {
+        String clean = item.toLowerCase();
+        if (clean.contains("postgres") || clean.contains("mongodb") || clean.contains("sql") || clean.contains("database")) {
+            result.getMatchedDatabases().add(item);
+        } else if (clean.contains("aws") || clean.contains("cloud") || clean.contains("azure") || clean.contains("gcp")) {
+            result.getMatchedCloudTechnologies().add(item);
+        } else if (clean.contains("react") || clean.contains("spring") || clean.contains("angular") || clean.contains("vue")) {
+            result.getMatchedTechnologies().add(item);
+        } else {
+            result.getMatchedSkills().add(item);
+        }
+    }
+
     // Helper JD DTO for mapping
     @lombok.Data
     public static class JdData {
         private List<String> requiredSkills = new ArrayList<>();
         private List<String> preferredSkills = new ArrayList<>();
+        private List<String> technologies = new ArrayList<>();
         private List<String> responsibilities = new ArrayList<>();
+        private List<String> softSkills = new ArrayList<>();
         private List<String> keywords = new ArrayList<>();
         private String experienceRequired;
         private String educationRequired;

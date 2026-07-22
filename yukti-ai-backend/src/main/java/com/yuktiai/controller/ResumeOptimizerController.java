@@ -159,7 +159,8 @@ public class ResumeOptimizerController {
                     "cloudinaryUrl", cloudinaryUrl,
                     "atsScore", atsScore,
                     "validationReport", validationReport,
-                    "analysisReport", analysisReport
+                    "analysisReport", analysisReport,
+                    "optimizedJson", cleanedOptimizedJson
             ));
 
         } catch (Exception e) {

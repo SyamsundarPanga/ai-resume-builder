@@ -97,4 +97,40 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of("message", "Logged out successfully!"));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody com.yuktiai.dto.ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new com.yuktiai.exception.ResourceNotFoundException("User not found with email: " + request.getEmail()));
+
+        String token = java.util.UUID.randomUUID().toString();
+        String hashedToken = org.springframework.util.DigestUtils.md5DigestAsHex(token.getBytes());
+
+        user.setResetToken(hashedToken);
+        user.setResetTokenExpiry(java.time.LocalDateTime.now().plusHours(1));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Password reset token generated successfully.",
+            "token", token
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody com.yuktiai.dto.ResetPasswordRequest request) {
+        String hashedToken = org.springframework.util.DigestUtils.md5DigestAsHex(request.getToken().getBytes());
+        User user = userRepository.findByResetToken(hashedToken)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired password reset token."));
+
+        if (user.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Reset token has expired."));
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
+    }
 }

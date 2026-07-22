@@ -40,6 +40,11 @@ public class ATSScoreCalculator {
                 5. educationScore: Alignment of degree/field of study with JD requirements.
                 6. formattingScore: General layout, font choices implied by section definitions (standard ranges are 80-100).
                 
+                SCORING INTEGRITY RULES:
+                - "Hybrid", "Remote", and "Onsite" must NEVER be treated as technical skills.
+                - Missing target work location keywords must NEVER reduce the skillsScore or experienceScore.
+                - Employment types (Full-time, contract, etc.) must NEVER reduce the score.
+                
                 Provide realistic, dynamic evaluations. Do not hardcode.
                 
                 You must return a valid JSON object matching this structure EXACTLY:

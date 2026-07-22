@@ -33,6 +33,7 @@ public class ResumeHistoryController {
     private final UserRepository userRepository;
     private final DOCXGeneratorService docxGeneratorService;
     private final PdfGeneratorService pdfGeneratorService;
+    private final com.yuktiai.repository.ResumeDownloadRepository resumeDownloadRepository;
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -101,11 +102,24 @@ public class ResumeHistoryController {
         String templateName = payload.getOrDefault("templateName", "ATS Friendly");
 
         if (resumeJson == null || resumeJson.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+             return ResponseEntity.badRequest().build();
         }
 
         try {
+            User user = getCurrentUser();
             byte[] docxBytes = docxGeneratorService.generateResumeDocx(resumeJson, templateName);
+            
+            // Log download to database
+            List<Resume> resumes = resumeRepository.findByUserIdOrderByUploadedAtDesc(user.getId());
+            if (!resumes.isEmpty()) {
+                com.yuktiai.entity.ResumeDownload download = com.yuktiai.entity.ResumeDownload.builder()
+                        .resume(resumes.get(0))
+                        .user(user)
+                        .format("DOCX")
+                        .build();
+                resumeDownloadRepository.save(download);
+            }
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=resume.docx")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -122,11 +136,24 @@ public class ResumeHistoryController {
         String templateName = payload.getOrDefault("templateName", "ATS Friendly");
 
         if (resumeJson == null || resumeJson.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+             return ResponseEntity.badRequest().build();
         }
 
         try {
+            User user = getCurrentUser();
             byte[] pdfBytes = pdfGeneratorService.generateResumePdf(resumeJson, templateName);
+
+            // Log download to database
+            List<Resume> resumes = resumeRepository.findByUserIdOrderByUploadedAtDesc(user.getId());
+            if (!resumes.isEmpty()) {
+                com.yuktiai.entity.ResumeDownload download = com.yuktiai.entity.ResumeDownload.builder()
+                        .resume(resumes.get(0))
+                        .user(user)
+                        .format("PDF")
+                        .build();
+                resumeDownloadRepository.save(download);
+            }
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=resume.pdf")
                     .contentType(MediaType.APPLICATION_PDF)
