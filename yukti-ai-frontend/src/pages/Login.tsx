@@ -81,6 +81,11 @@ const Login: React.FC = () => {
               {...register('password', { required: 'Password is required' })}
             />
             {errors.password && <span className="text-red-500 text-xs mt-1 block">{errors.password.message}</span>}
+            <div className="text-right mt-1.5">
+              <Link to="/forgot-password" className="text-xs text-indigo-400 font-semibold hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button

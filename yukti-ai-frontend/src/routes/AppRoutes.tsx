@@ -1,16 +1,13 @@
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import UploadResume from '../pages/UploadResume';
-import OptimizeResume from '../pages/OptimizeResume';
-import History from '../pages/History';
-import Profile from '../pages/Profile';
-import Settings from '../pages/Settings';
-import FutureAiToolkit from '../pages/FutureAiToolkit';
+import AIWorkspace from '@pages/AIWorkspace';
+
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -18,17 +15,15 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/upload" element={<UploadResume />} />
-            <Route path="/optimize" element={<OptimizeResume />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/future" element={<FutureAiToolkit />} />
+            <Route path="/" element={<AIWorkspace />} />
+            {/* Redirect any other page requests to workspace */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
       </Routes>

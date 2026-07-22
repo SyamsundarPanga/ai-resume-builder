@@ -1,4 +1,6 @@
 import axios from 'axios';
+import ErrorService from '../services/ErrorService';
+import { showApiErrorToast } from '../components/error/ErrorToast';
 
 const API = axios.create({
   baseURL: 'http://localhost:8080',
@@ -22,6 +24,8 @@ API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // 1. Handle 401 Unauthorized Session Refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
@@ -41,7 +45,6 @@ API.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return API(originalRequest);
       } catch (refreshError) {
-        // Clear tokens and redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
@@ -49,6 +52,15 @@ API.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+
+    // 2. Global Error Mapping and Dynamic Retry Toast
+    const mapped = ErrorService.mapError(error);
+    if (error.response?.status !== 401) {
+      showApiErrorToast(mapped.message, () => {
+        return API(originalRequest);
+      });
+    }
+
     return Promise.reject(error);
   }
 );
