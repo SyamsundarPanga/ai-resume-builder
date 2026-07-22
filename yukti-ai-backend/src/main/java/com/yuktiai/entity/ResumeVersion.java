@@ -19,6 +19,7 @@ public class ResumeVersion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Resume resume;
 
     @Column(name = "version_number", nullable = false)

@@ -21,6 +21,7 @@ public class ParsedResume {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Resume resume;
 
     @Column(name = "parsed_json", nullable = false, columnDefinition = "TEXT")

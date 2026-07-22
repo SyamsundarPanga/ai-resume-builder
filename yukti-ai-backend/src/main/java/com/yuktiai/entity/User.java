@@ -47,6 +47,12 @@ public class User {
     @Column(name = "years_of_experience", precision = 4, scale = 2)
     private BigDecimal yearsOfExperience;
 
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private java.time.LocalDateTime resetTokenExpiry;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private OffsetDateTime createdAt;

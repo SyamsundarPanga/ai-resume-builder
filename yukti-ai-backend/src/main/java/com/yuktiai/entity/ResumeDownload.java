@@ -19,10 +19,12 @@ public class ResumeDownload {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Resume resume;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private User user;
 
     @Column(name = "format", nullable = false)
